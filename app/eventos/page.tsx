@@ -116,9 +116,20 @@ export default function EventosPage() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [likeAnimation, setLikeAnimation] = useState<number | null>(null)
   const [moderationError, setModerationError] = useState<string | null>(null)
+  const [supabaseClient, setSupabaseClient] = useState<ReturnType<typeof createClient> | null>(null)
 
-  // Criar cliente Supabase para realtime
-  const supabase = createClient()
+  // Criar cliente Supabase para realtime apenas no cliente (browser)
+  useEffect(() => {
+    // Em ambiente de build/prerender no servidor, apenas não inicializa o cliente
+    if (typeof window === "undefined") return
+
+    try {
+      const client = createClient()
+      setSupabaseClient(client)
+    } catch (error) {
+      console.error("Erro ao criar cliente Supabase:", error)
+    }
+  }, [])
 
   // Gerar ou recuperar session ID
   useEffect(() => {
@@ -167,7 +178,9 @@ export default function EventosPage() {
   }, [fetchLikesAndComments])
 
   useEffect(() => {
-    const channel = supabase
+    if (!supabaseClient) return
+
+    const channel = supabaseClient
       .channel("event-interactions")
       .on("postgres_changes", { event: "*", schema: "public", table: "event_likes" }, () => {
         fetchLikesAndComments()
@@ -213,9 +226,9 @@ export default function EventosPage() {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      supabaseClient.removeChannel(channel)
     }
-  }, [supabase, fetchLikesAndComments])
+  }, [supabaseClient, fetchLikesAndComments])
 
   const handleLikeEvent = async (eventId: number) => {
     if (!sessionId) return
