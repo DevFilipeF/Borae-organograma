@@ -1,16 +1,9 @@
-import { createClient } from "@supabase/supabase-js"
 import { type NextRequest, NextResponse } from "next/server"
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+import { createAdminClient } from "@/lib/supabase/admin"
 
 export async function GET(request: NextRequest) {
   try {
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ likes: {} })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createAdminClient()
 
     const { data: likes, error } = await supabase
       .from("event_likes")
@@ -43,11 +36,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!supabaseUrl || !supabaseKey) {
-      return NextResponse.json({ error: "Database not configured" }, { status: 500 })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createAdminClient()
     const { eventId, sessionId, userName, action } = await request.json()
 
     if (action === "unlike") {

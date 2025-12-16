@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { createBrowserClient } from "@supabase/ssr"
+import { createClient } from "@/lib/supabase/client"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowLeft,
@@ -118,10 +118,7 @@ export default function EventosPage() {
   const [moderationError, setModerationError] = useState<string | null>(null)
 
   // Criar cliente Supabase para realtime
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
+  const supabase = createClient()
 
   // Gerar ou recuperar session ID
   useEffect(() => {

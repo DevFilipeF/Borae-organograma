@@ -44,7 +44,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { createBrowserClient } from "@supabase/ssr"
+import { createClient } from "@/lib/supabase/client"
 
 interface Comment {
   id: string
@@ -107,10 +107,7 @@ export default function InsightsPage() {
   const [editContent, setEditContent] = useState("")
   const [showLgpd, setShowLgpd] = useState(true) // Always show LGPD modal on page load
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
+  const supabase = createClient()
 
   const acceptLgpd = () => {
     setShowLgpd(false)
