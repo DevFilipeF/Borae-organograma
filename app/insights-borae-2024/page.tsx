@@ -106,8 +106,19 @@ export default function InsightsPage() {
   const [editingComment, setEditingComment] = useState<string | null>(null)
   const [editContent, setEditContent] = useState("")
   const [showLgpd, setShowLgpd] = useState(true) // Always show LGPD modal on page load
+  const [supabaseClient, setSupabaseClient] = useState<ReturnType<typeof createClient> | null>(null)
 
-  const supabase = createClient()
+  // Criar cliente Supabase apenas no navegador
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    try {
+      const client = createClient()
+      setSupabaseClient(client)
+    } catch (error) {
+      console.error("Erro ao criar cliente Supabase (insights):", error)
+    }
+  }, [])
 
   const acceptLgpd = () => {
     setShowLgpd(false)
@@ -225,32 +236,37 @@ export default function InsightsPage() {
   }
 
   useEffect(() => {
+    if (!supabaseClient) {
+      fetchData()
+      return
+    }
+
     fetchData()
 
     // Realtime subscriptions
-    const likesChannel = supabase
+    const likesChannel = supabaseClient
       .channel("likes-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "likes" }, () => fetchData())
       .on("postgres_changes", { event: "*", schema: "public", table: "event_likes" }, () => fetchData())
       .subscribe()
 
-    const commentsChannel = supabase
+    const commentsChannel = supabaseClient
       .channel("comments-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "comments" }, () => fetchComments())
       .on("postgres_changes", { event: "*", schema: "public", table: "event_comments" }, () => fetchComments())
       .subscribe()
 
-    const borusChannel = supabase
+    const borusChannel = supabaseClient
       .channel("borus-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "borus_interactions" }, () => fetchData())
       .subscribe()
 
     return () => {
-      supabase.removeChannel(likesChannel)
-      supabase.removeChannel(commentsChannel)
-      supabase.removeChannel(borusChannel)
+      supabaseClient.removeChannel(likesChannel)
+      supabaseClient.removeChannel(commentsChannel)
+      supabaseClient.removeChannel(borusChannel)
     }
-  }, [])
+  }, [supabaseClient])
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M"
