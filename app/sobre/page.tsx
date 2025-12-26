@@ -213,7 +213,7 @@ export default function SobrePage() {
               variant="outline"
               className="mb-4 text-stone-600 border-stone-300 px-4 py-1 text-sm uppercase tracking-wider"
             >
-              Assistente Virtual (BORUS)
+              Assistente Virtual
             </Badge>
             <h2 className="text-3xl font-bold text-slate-900 mb-4">Conheça o BORUS</h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
